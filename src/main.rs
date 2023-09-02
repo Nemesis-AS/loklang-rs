@@ -1,14 +1,11 @@
-use actix_web::{get, App, HttpResponse, HttpServer, Responder};
+use std::path::PathBuf;
 
-#[get("/")]
-async fn hello() -> impl Responder {
-    HttpResponse::Ok().body("Hello World!")
-}
+mod metadata;
+mod utils;
 
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
-    HttpServer::new(|| App::new().service(hello))
-        .bind(("127.0.0.1", 8000))?
-        .run()
-        .await
+fn main() {
+    let path: PathBuf = PathBuf::from("D:\\Music\\Test");
+
+    let files: Vec<metadata::AudioMetadata> = utils::scan_dir(path);
+    println!("Files: {:#?}", files);
 }
