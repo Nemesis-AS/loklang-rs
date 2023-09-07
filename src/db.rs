@@ -12,6 +12,16 @@ pub enum SongActions {
     GetSongByID(String),
 }
 
+pub enum GetAllActions {
+    Albums,
+    Artists,
+}
+
+pub enum FilterActions {
+    ByAlbum(String),
+    ByArtist(String),
+}
+
 pub async fn create_tables(pool: &Pool) {
     let pool = pool.clone();
     let conn = pool.get().unwrap();
@@ -85,6 +95,64 @@ fn get_song_by_id(
     rows_to_metadata(stmt, [song_id])
 }
 
+pub async fn handle_get_all_action(
+    pool: &Pool,
+    action: GetAllActions,
+) -> Result<Vec<String>, Error> {
+    let pool = pool.clone();
+    let conn = web::block(move || pool.get()).await.unwrap().unwrap();
+
+    web::block(move || match action {
+        GetAllActions::Albums => get_all_albums(conn),
+        GetAllActions::Artists => get_all_artists(conn),
+    })
+    .await?
+    .map_err(error::ErrorInternalServerError)
+}
+
+fn get_all_albums(conn: Connection) -> Result<Vec<String>, rusqlite::Error> {
+    let stmt = conn.prepare("SELECT DISTINCT album FROM songs").unwrap();
+    rows_to_string(stmt)
+}
+
+fn get_all_artists(conn: Connection) -> Result<Vec<String>, rusqlite::Error> {
+    let stmt = conn.prepare("SELECT DISTINCT artists FROM songs").unwrap();
+    rows_to_string(stmt)
+}
+
+pub async fn handle_filter_action(
+    pool: &Pool,
+    action: FilterActions,
+) -> Result<Vec<AudioMetadata>, Error> {
+    let pool = pool.clone();
+    let conn = web::block(move || pool.get()).await.unwrap().unwrap();
+
+    web::block(move || match action {
+        FilterActions::ByAlbum(album) => get_songs_by_album(conn, album),
+        FilterActions::ByArtist(artist) => get_songs_by_artist(conn, artist),
+    })
+    .await?
+    .map_err(error::ErrorInternalServerError)
+}
+
+fn get_songs_by_album(
+    conn: Connection,
+    album: String,
+) -> Result<Vec<AudioMetadata>, rusqlite::Error> {
+    let stmt = conn.prepare("SELECT * FROM songs WHERE album = ?").unwrap();
+    rows_to_metadata(stmt, [album])
+}
+
+fn get_songs_by_artist(
+    conn: Connection,
+    artist: String,
+) -> Result<Vec<AudioMetadata>, rusqlite::Error> {
+    let stmt = conn
+        .prepare("SELECT * FROM songs WHERE artists LIKE ?")
+        .unwrap();
+    rows_to_metadata(stmt, [artist])
+}
+
 fn rows_to_metadata(
     mut statement: rusqlite::Statement,
     params: impl rusqlite::Params,
@@ -110,5 +178,11 @@ fn rows_to_metadata(
                 duration: row.get(14).unwrap(),
             })
         })
+        .and_then(Iterator::collect)
+}
+
+fn rows_to_string(mut statement: rusqlite::Statement) -> Result<Vec<String>, rusqlite::Error> {
+    statement
+        .query_map([], |row| Ok(row.get(0).unwrap()))
         .and_then(Iterator::collect)
 }

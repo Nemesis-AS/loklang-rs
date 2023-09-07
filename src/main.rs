@@ -11,7 +11,9 @@ use actix_web::{
 use r2d2::Pool;
 use r2d2_sqlite::{self, SqliteConnectionManager};
 
-use routes::{get_song_by_id, get_songs};
+use routes::{
+    get_albums, get_artists, get_song_by_id, get_songs, get_songs_by_album, get_songs_by_artist,
+};
 
 use std::path::PathBuf;
 
@@ -33,9 +35,15 @@ async fn main() -> std::io::Result<()> {
     setup_db(&pool).await;
 
     HttpServer::new(move || {
-        App::new()
-            .app_data(Data::new(pool.clone()))
-            .service(scope("/api/v1").service(get_songs).service(get_song_by_id))
+        App::new().app_data(Data::new(pool.clone())).service(
+            scope("/api/v1")
+                .service(get_songs)
+                .service(get_song_by_id)
+                .service(get_albums)
+                .service(get_songs_by_album)
+                .service(get_artists)
+                .service(get_songs_by_artist),
+        )
     })
     .bind(("127.0.0.1", 8000))?
     .run()
