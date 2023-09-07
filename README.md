@@ -8,7 +8,7 @@ Loklang is a local audio streaming service that can be used to access audio file
 
 1. Clone this repo
 ```shell
-git clone 
+git clone git@github.com:Nemesis-AS/loklang-rs.git
 ```
 2. Make any changes you wish
 ```shell
@@ -19,7 +19,7 @@ cargo run
 
 1. Clone this repo
 ```shell
-git clone 
+git clone git@github.com:Nemesis-AS/loklang-rs.git
 ```
 2. Run cargo build
 ```shell

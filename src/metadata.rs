@@ -1,33 +1,38 @@
+use crate::utils::{extract_arr, extract_arr_string};
+
 use lofty::flac::{FlacFile, FlacProperties};
 use lofty::id3::v2::FrameValue;
 use lofty::mpeg::MpegFile;
 use lofty::ogg::{OggPictureStorage, VorbisComments};
 use lofty::{AudioFile, ParseOptions};
 
+use serde::{Deserialize, Serialize};
+
 use std::fs::File;
 use std::path::PathBuf;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 pub struct AudioMetadata {
-    filepath: String,
+    pub id: String,
+    pub filepath: String,
 
-    title: String,
-    artists: Vec<String>,
-    album: String,
-    album_artists: Vec<String>,
-    year: String,
-    genre: Vec<String>,
-    copyright: String,
-    track_number: String,
-    disc_number: String,
-    track_total: String,
-    disc_total: String,
-    date: String,
-    pictures: Vec<MetaPicture>,
-    duration: u64,
+    pub title: String,
+    pub artists: Vec<String>,
+    pub album: String,
+    pub album_artists: Vec<String>,
+    pub year: String,
+    pub genre: Vec<String>,
+    pub copyright: String,
+    pub track_number: String,
+    pub disc_number: String,
+    pub track_total: String,
+    pub disc_total: String,
+    pub date: String,
+    pub pictures: Vec<MetaPicture>,
+    pub duration: u64,
 }
 
-#[derive(Default)]
+#[derive(Default, Serialize, Deserialize)]
 pub struct MetaPicture {
     picture_type: u8,
     mime: String,
@@ -46,7 +51,6 @@ impl std::fmt::Debug for MetaPicture {
     }
 }
 
-// @todo! Convert to Option<AudioMetadata>;
 pub fn get_metadata(filepath: PathBuf) -> Option<AudioMetadata> {
     let format: &str = filepath
         .extension()
@@ -60,7 +64,7 @@ pub fn get_metadata(filepath: PathBuf) -> Option<AudioMetadata> {
         // "ogg" => println!("OGG"),
         // "wav" => println!("WAV"),
         _ => {
-            println!("Unknown Format!");
+            // println!("Unknown Format!");
             None
         }
     };
@@ -76,6 +80,7 @@ fn read_flac(filepath: PathBuf) -> Option<AudioMetadata> {
 
         let mut meta: AudioMetadata = AudioMetadata {
             filepath: String::from(filepath.to_str().unwrap_or("")),
+            id: format!("{:x}", md5::compute(filepath.to_str().unwrap_or(""))),
             ..Default::default()
         };
 
@@ -132,6 +137,7 @@ fn read_mp3(filepath: PathBuf) -> Option<AudioMetadata> {
     if let Ok(file) = MpegFile::read_from(&mut content, ParseOptions::new()) {
         let mut meta: AudioMetadata = AudioMetadata {
             filepath: String::from(filepath.to_str().unwrap_or("")),
+            id: format!("{:x}", md5::compute(filepath.to_str().unwrap_or(""))),
             ..Default::default()
         };
 
@@ -165,11 +171,11 @@ fn read_mp3(filepath: PathBuf) -> Option<AudioMetadata> {
         //ID3v2
         if let Some(v2) = file.id3v2() {
             for frame in v2 {
-                println!(
-                    "Title: {:?}\nValue: {:?}\n\n",
-                    frame.id_str(),
-                    frame.content()
-                );
+                // println!(
+                //     "Title: {:?}\nValue: {:?}\n\n",
+                //     frame.id_str(),
+                //     frame.content()
+                // );
 
                 // @todo()! Missing Genre, Track Position, Duration;
                 match frame.id_str() {
@@ -201,14 +207,6 @@ fn read_mp3(filepath: PathBuf) -> Option<AudioMetadata> {
 }
 
 // Utils
-fn extract_arr(value: &str, split_char: &str) -> Vec<String> {
-    value.split(split_char).map(String::from).collect()
-}
-
-fn extract_arr_string(value: String, split_char: &str) -> Vec<String> {
-    value.split(split_char).map(String::from).collect()
-}
-
 fn decode_text_frame(frame: &FrameValue) -> String {
     match frame {
         FrameValue::Text(tif) => tif.value.clone(),

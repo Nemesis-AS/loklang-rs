@@ -12,11 +12,11 @@ pub fn scan_dir(dir_path: PathBuf) -> Vec<metadata::AudioMetadata> {
                     let p: PathBuf = entry.path();
 
                     if p.is_dir() {
-                        println!("Found Dir: {}", p.display());
+                        // println!("Found Dir: {}", p.display());
                         let mut dir_info = scan_dir(p);
                         info.append(&mut dir_info);
                     } else {
-                        println!("Scanning File: {}", p.display());
+                        // println!("Scanning File: {}", p.display());
                         if let Some(meta) = metadata::get_metadata(p) {
                             info.push(meta);
                         }
@@ -31,4 +31,25 @@ pub fn scan_dir(dir_path: PathBuf) -> Vec<metadata::AudioMetadata> {
     }
 
     info
+}
+
+pub fn serialize_string_arr(arr: &Vec<String>) -> String {
+    let mut out: String = String::new();
+
+    for item in arr {
+        if !out.is_empty() {
+            out.push_str(", ");
+        }
+        out.push_str(item);
+    }
+
+    out
+}
+
+pub fn extract_arr(value: &str, split_char: &str) -> Vec<String> {
+    value.split(split_char).map(String::from).collect()
+}
+
+pub fn extract_arr_string(value: String, split_char: &str) -> Vec<String> {
+    value.split(split_char).map(String::from).collect()
 }
