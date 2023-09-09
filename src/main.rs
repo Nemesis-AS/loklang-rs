@@ -13,6 +13,7 @@ use r2d2_sqlite::{self, SqliteConnectionManager};
 
 use routes::{
     get_albums, get_artists, get_song_by_id, get_songs, get_songs_by_album, get_songs_by_artist,
+    get_stream_by_id,
 };
 
 use std::path::PathBuf;
@@ -34,6 +35,7 @@ async fn main() -> std::io::Result<()> {
 
     setup_db(&pool).await;
 
+    println!("Starting Server...");
     HttpServer::new(move || {
         App::new().app_data(Data::new(pool.clone())).service(
             scope("/api/v1")
@@ -42,7 +44,8 @@ async fn main() -> std::io::Result<()> {
                 .service(get_albums)
                 .service(get_songs_by_album)
                 .service(get_artists)
-                .service(get_songs_by_artist),
+                .service(get_songs_by_artist)
+                .service(get_stream_by_id),
         )
     })
     .bind(("127.0.0.1", 8000))?

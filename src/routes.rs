@@ -1,12 +1,18 @@
+use std::path::PathBuf;
+
+use actix_files::NamedFile;
 use actix_web::{
     get,
     web::{Data, Path},
-    HttpResponse,
+    HttpRequest, HttpResponse, Responder,
 };
 
-use crate::db::{
-    handle_filter_action, handle_get_all_action, handle_song_action, FilterActions, GetAllActions,
-    SongActions,
+use crate::{
+    db::{
+        handle_filter_action, handle_get_all_action, handle_song_action, FilterActions,
+        GetAllActions, SongActions,
+    },
+    metadata::AudioMetadata,
 };
 
 type DataDB = Data<r2d2::Pool<r2d2_sqlite::SqliteConnectionManager>>;
@@ -73,3 +79,19 @@ pub async fn get_songs_by_artist(data: Path<String>, db: DataDB) -> HttpResponse
 // GET playlist/:id
 
 // GET stream/:id
+#[get("/stream/{id}")]
+pub async fn get_stream_by_id(req: HttpRequest, data: Path<String>, db: DataDB) -> impl Responder {
+    let song_id: String = data.into_inner();
+    let res: Vec<AudioMetadata> = handle_song_action(&db, SongActions::GetSongByID(song_id))
+        .await
+        .unwrap();
+    if res.is_empty() {
+        HttpResponse::NotFound().body("Not Found!")
+    } else {
+        let song: &AudioMetadata = &res[0];
+        let path: PathBuf = PathBuf::from(song.filepath.clone());
+
+        let named_file = NamedFile::open_async(path).await.unwrap();
+        named_file.into_response(&req)
+    }
+}
