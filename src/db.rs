@@ -150,7 +150,7 @@ fn get_songs_by_artist(
     let stmt = conn
         .prepare("SELECT * FROM songs WHERE artists LIKE ?")
         .unwrap();
-    rows_to_metadata(stmt, [artist])
+    rows_to_metadata(stmt, [format!("%{}%", artist)])
 }
 
 fn rows_to_metadata(
