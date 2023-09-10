@@ -16,6 +16,7 @@ use routes::{
     get_stream_by_id,
 };
 
+use std::fs::create_dir_all;
 use std::path::PathBuf;
 
 async fn setup_db(pool: &Pool<SqliteConnectionManager>) {
@@ -30,6 +31,8 @@ async fn setup_db(pool: &Pool<SqliteConnectionManager>) {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    create_dir_all("./data")?;
+
     let manager = SqliteConnectionManager::file("data/db.sqlite");
     let pool = Pool::new(manager).unwrap();
 

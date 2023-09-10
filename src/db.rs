@@ -33,6 +33,8 @@ pub async fn create_tables(pool: &Pool) {
     .expect("An Error occurred while creating songs table!");
 
     conn.execute("CREATE TABLE IF NOT EXISTS pictures(image_id TEXT NOT NULL PRIMARY KEY, picture_type INT, mime TEXT, description TEXT, data BLOB, song_id TEXT, FOREIGN KEY(song_id) REFERENCES songs(id))", []).expect("An Error occurred while creating pictures table!");
+
+    conn.execute("CREATE TABLE IF NOT EXISTS playlists(playlist_id TEXT PRIMARY KEY, title TEXT, songs TEXT)", []).expect("An Error occurred while creating playlists table!");
 }
 
 pub async fn add_songs(pool: &Pool, data: Vec<AudioMetadata>) -> Result<(), Error> {
