@@ -34,10 +34,11 @@ pub struct AudioMetadata {
 
 #[derive(Default, Serialize, Deserialize)]
 pub struct MetaPicture {
-    picture_type: u8,
-    mime: String,
-    description: String,
-    data: Vec<u8>,
+    pub id: String,
+    pub picture_type: u8,
+    pub mime: String,
+    pub description: String,
+    pub data: Vec<u8>,
 }
 
 impl std::fmt::Debug for MetaPicture {
@@ -108,7 +109,11 @@ fn read_flac(filepath: PathBuf) -> Option<AudioMetadata> {
         for item in pictures {
             let (pic, _) = item;
 
+            let mut pic_id = meta.filepath.clone();
+            pic_id.push_str(pic.pic_type().as_u8().to_string().as_str());
+
             let res: MetaPicture = MetaPicture {
+                id: format!("{:x}", md5::compute(pic_id)),
                 picture_type: pic.pic_type().as_u8(),
                 mime: pic.mime_type().as_str().to_string(),
                 description: String::from(pic.description().unwrap_or("")),
@@ -189,7 +194,7 @@ fn read_mp3(filepath: PathBuf) -> Option<AudioMetadata> {
                     "TYER" | "TDOR" => meta.year = decode_text_frame(frame.content()),
                     "TCOP" => meta.copyright = decode_text_frame(frame.content()),
                     "TDAT" => meta.date = decode_text_frame(frame.content()),
-                    "APIC" => meta.pictures = decode_picture_frame(frame.content()),
+                    "APIC" => meta.pictures = decode_picture_frame(frame.content(), &meta.filepath),
                     // "TLEN" => meta.duration = decode_text_frame(frame.content()),
                     _ => (),
                 };
@@ -215,10 +220,14 @@ fn decode_text_frame(frame: &FrameValue) -> String {
     }
 }
 
-fn decode_picture_frame(frame: &FrameValue) -> Vec<MetaPicture> {
+fn decode_picture_frame(frame: &FrameValue, filepath: &str) -> Vec<MetaPicture> {
     if let FrameValue::Picture(img) = frame {
         let pic: &lofty::Picture = &img.picture;
+        let mut pic_id: String = filepath.to_string();
+        pic_id.push_str(pic.pic_type().as_u8().to_string().as_str());
+
         vec![MetaPicture {
+            id: format!("{:x}", md5::compute(pic_id)),
             picture_type: pic.pic_type().as_u8(),
             mime: pic.mime_type().as_str().to_string(),
             description: String::from(pic.description().unwrap_or("")),

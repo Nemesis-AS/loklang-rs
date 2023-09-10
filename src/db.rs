@@ -1,4 +1,4 @@
-use crate::metadata::AudioMetadata;
+use crate::metadata::{AudioMetadata, MetaPicture};
 use crate::utils::{extract_arr_string, serialize_string_arr};
 
 use actix_web::{error, web, Error};
@@ -30,7 +30,9 @@ pub async fn create_tables(pool: &Pool) {
         "CREATE TABLE IF NOT EXISTS songs(id TEXT NOT NULL PRIMARY KEY, filepath TEXT NOT NULL, title TEXT, artists TEXT, album TEXT, album_artists TEXT, year TEXT, genre TEXT, copyright TEXT, track_number TEXT, disc_number TEXT, track_total TEXT, disc_total TEXT, date TEXT, duration INT)",
         [],
     )
-    .expect("An Error Occurred while creating songs table!");
+    .expect("An Error occurred while creating songs table!");
+
+    conn.execute("CREATE TABLE IF NOT EXISTS pictures(image_id TEXT NOT NULL PRIMARY KEY, picture_type INT, mime TEXT, description TEXT, data BLOB, song_id TEXT, FOREIGN KEY(song_id) REFERENCES songs(id))", []).expect("An Error occurred while creating pictures table!");
 }
 
 pub async fn add_songs(pool: &Pool, data: Vec<AudioMetadata>) -> Result<(), Error> {
@@ -39,6 +41,10 @@ pub async fn add_songs(pool: &Pool, data: Vec<AudioMetadata>) -> Result<(), Erro
 
     let mut stmt = conn
         .prepare("INSERT OR IGNORE INTO songs VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+        .unwrap();
+
+    let mut stmt2 = conn
+        .prepare("INSERT OR IGNORE INTO pictures VALUES(?, ?, ?, ?, ?, ?)")
         .unwrap();
 
     for item in data {
@@ -60,6 +66,19 @@ pub async fn add_songs(pool: &Pool, data: Vec<AudioMetadata>) -> Result<(), Erro
             item.duration
         ])
         .expect("An Error Occurred while inserting song to the DB!");
+
+        for picture in item.pictures {
+            stmt2
+                .execute(params![
+                    picture.id.as_str(),
+                    picture.picture_type.clone(),
+                    picture.mime.as_str(),
+                    picture.description.as_str(),
+                    picture.data.clone(),
+                    item.id.as_str()
+                ])
+                .expect("An Error occurred while inserting image to the DB!");
+        }
     }
 
     Ok(())
@@ -84,7 +103,7 @@ pub async fn handle_song_action(
 
 fn get_all_songs(conn: Connection) -> Result<Vec<AudioMetadata>, rusqlite::Error> {
     let stmt = conn.prepare("SELECT * FROM songs").unwrap();
-    rows_to_metadata(stmt, [])
+    rows_to_metadata(&conn, stmt, [])
 }
 
 fn get_song_by_id(
@@ -92,7 +111,7 @@ fn get_song_by_id(
     song_id: String,
 ) -> Result<Vec<AudioMetadata>, rusqlite::Error> {
     let stmt = conn.prepare("SELECT * FROM songs WHERE id = ?").unwrap();
-    rows_to_metadata(stmt, [song_id])
+    rows_to_metadata(&conn, stmt, [song_id])
 }
 
 pub async fn handle_get_all_action(
@@ -140,7 +159,7 @@ fn get_songs_by_album(
     album: String,
 ) -> Result<Vec<AudioMetadata>, rusqlite::Error> {
     let stmt = conn.prepare("SELECT * FROM songs WHERE album = ?").unwrap();
-    rows_to_metadata(stmt, [album])
+    rows_to_metadata(&conn, stmt, [album])
 }
 
 fn get_songs_by_artist(
@@ -150,15 +169,19 @@ fn get_songs_by_artist(
     let stmt = conn
         .prepare("SELECT * FROM songs WHERE artists LIKE ?")
         .unwrap();
-    rows_to_metadata(stmt, [format!("%{}%", artist)])
+    rows_to_metadata(&conn, stmt, [format!("%{}%", artist)])
 }
 
 fn rows_to_metadata(
+    conn: &Connection,
     mut statement: rusqlite::Statement,
     params: impl rusqlite::Params,
 ) -> Result<Vec<AudioMetadata>, rusqlite::Error> {
     statement
         .query_map(params, |row| {
+            let row_id: String = row.get(0).unwrap();
+            let pics: Vec<MetaPicture> = get_pictures(conn, row_id).unwrap();
+
             Ok(AudioMetadata {
                 id: row.get(0).unwrap(),
                 filepath: row.get(1).unwrap(),
@@ -174,7 +197,7 @@ fn rows_to_metadata(
                 track_total: row.get(11).unwrap(),
                 disc_total: row.get(12).unwrap(),
                 date: row.get(13).unwrap(),
-                pictures: vec![],
+                pictures: pics,
                 duration: row.get(14).unwrap(),
             })
         })
@@ -184,5 +207,20 @@ fn rows_to_metadata(
 fn rows_to_string(mut statement: rusqlite::Statement) -> Result<Vec<String>, rusqlite::Error> {
     statement
         .query_map([], |row| Ok(row.get(0).unwrap()))
+        .and_then(Iterator::collect)
+}
+
+fn get_pictures(conn: &Connection, song_id: String) -> Result<Vec<MetaPicture>, rusqlite::Error> {
+    conn.prepare("SELECT * FROM pictures WHERE song_id = ?")
+        .unwrap()
+        .query_map([song_id], |row| {
+            Ok(MetaPicture {
+                id: row.get(0).unwrap(),
+                picture_type: row.get(1).unwrap(),
+                mime: row.get(2).unwrap(),
+                description: row.get(3).unwrap(),
+                data: row.get(4).unwrap(),
+            })
+        })
         .and_then(Iterator::collect)
 }
