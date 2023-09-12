@@ -4,6 +4,8 @@ use crate::utils::{extract_arr_string, serialize_string_arr};
 use actix_web::{error, web, Error};
 use rusqlite::params;
 
+use base64::Engine as _;
+
 type Pool = r2d2::Pool<r2d2_sqlite::SqliteConnectionManager>;
 type Connection = r2d2::PooledConnection<r2d2_sqlite::SqliteConnectionManager>;
 
@@ -174,6 +176,21 @@ fn get_songs_by_artist(
     rows_to_metadata(&conn, stmt, [format!("%{}%", artist)])
 }
 
+pub async fn get_picture_data_by_id(pool: &Pool, picture_id: String) -> Result<Vec<String>, Error> {
+    let pool = pool.clone();
+    let conn = web::block(move || pool.get()).await.unwrap().unwrap();
+
+    web::block(move || {
+        let stmt = conn
+            .prepare("SELECT mime, data FROM pictures WHERE image_id = ?")
+            .unwrap();
+
+        rows_to_picture_data(stmt, [picture_id])
+    })
+    .await?
+    .map_err(error::ErrorInternalServerError)
+}
+
 fn rows_to_metadata(
     conn: &Connection,
     mut statement: rusqlite::Statement,
@@ -212,6 +229,22 @@ fn rows_to_string(mut statement: rusqlite::Statement) -> Result<Vec<String>, rus
         .and_then(Iterator::collect)
 }
 
+fn rows_to_picture_data(
+    mut statement: rusqlite::Statement,
+    params: impl rusqlite::Params,
+) -> Result<Vec<String>, rusqlite::Error> {
+    statement
+        .query_map(params, |row| {
+            let mime: String = row.get(0).unwrap();
+            let data: Vec<u8> = row.get(1).unwrap();
+            let encoded: String = base64::engine::general_purpose::STANDARD_NO_PAD.encode(data);
+            let final_str: String = format!("data:{};base64,{}", mime, encoded);
+
+            Ok(final_str)
+        })
+        .and_then(Iterator::collect)
+}
+
 fn get_pictures(conn: &Connection, song_id: String) -> Result<Vec<MetaPicture>, rusqlite::Error> {
     conn.prepare("SELECT * FROM pictures WHERE song_id = ?")
         .unwrap()
@@ -221,7 +254,7 @@ fn get_pictures(conn: &Connection, song_id: String) -> Result<Vec<MetaPicture>, 
                 picture_type: row.get(1).unwrap(),
                 mime: row.get(2).unwrap(),
                 description: row.get(3).unwrap(),
-                data: row.get(4).unwrap(),
+                data: vec![], //row.get(4).unwrap(),
             })
         })
         .and_then(Iterator::collect)

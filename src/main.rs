@@ -12,8 +12,8 @@ use r2d2::Pool;
 use r2d2_sqlite::{self, SqliteConnectionManager};
 
 use routes::{
-    get_albums, get_artists, get_song_by_id, get_songs, get_songs_by_album, get_songs_by_artist,
-    get_stream_by_id,
+    get_albums, get_artists, get_picture, get_song_by_id, get_songs, get_songs_by_album,
+    get_songs_by_artist, get_stream_by_id,
 };
 
 use std::fs::create_dir_all;
@@ -48,10 +48,11 @@ async fn main() -> std::io::Result<()> {
                 .service(get_songs_by_album)
                 .service(get_artists)
                 .service(get_songs_by_artist)
-                .service(get_stream_by_id),
+                .service(get_stream_by_id)
+                .service(get_picture),
         )
     })
-    .bind(("127.0.0.1", 8000))?
+    .bind(("0.0.0.0", 8000))?
     .run()
     .await
 }

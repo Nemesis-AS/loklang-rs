@@ -9,8 +9,8 @@ use actix_web::{
 
 use crate::{
     db::{
-        handle_filter_action, handle_get_all_action, handle_song_action, FilterActions,
-        GetAllActions, SongActions,
+        get_picture_data_by_id, handle_filter_action, handle_get_all_action, handle_song_action,
+        FilterActions, GetAllActions, SongActions,
     },
     metadata::AudioMetadata,
 };
@@ -30,7 +30,7 @@ pub async fn get_songs(db: DataDB) -> HttpResponse {
 #[get("/songs/{id}")]
 pub async fn get_song_by_id(data: Path<String>, db: DataDB) -> HttpResponse {
     let song_id = data.into_inner();
-    println!("SongID: {:?}", song_id);
+    // println!("SongID: {:?}", song_id);
     let res = handle_song_action(&db, SongActions::GetSongByID(song_id))
         .await
         .unwrap();
@@ -49,7 +49,7 @@ pub async fn get_albums(db: DataDB) -> HttpResponse {
 #[get("/albums/{id}")]
 pub async fn get_songs_by_album(data: Path<String>, db: DataDB) -> HttpResponse {
     let album: String = data.into_inner();
-    println!("Album: {:?}", album);
+    // println!("Album: {:?}", album);
     let res = handle_filter_action(&db, FilterActions::ByAlbum(album))
         .await
         .unwrap();
@@ -68,7 +68,7 @@ pub async fn get_artists(db: DataDB) -> HttpResponse {
 #[get("/artists/{id}")]
 pub async fn get_songs_by_artist(data: Path<String>, db: DataDB) -> HttpResponse {
     let artist: String = data.into_inner();
-    println!("Artist: {:?}", artist);
+    // println!("Artist: {:?}", artist);
     let res = handle_filter_action(&db, FilterActions::ByArtist(artist))
         .await
         .unwrap();
@@ -93,5 +93,18 @@ pub async fn get_stream_by_id(req: HttpRequest, data: Path<String>, db: DataDB) 
 
         let named_file = NamedFile::open_async(path).await.unwrap();
         named_file.into_response(&req)
+    }
+}
+
+// GET picture/:id
+#[get("/picture/{id}")]
+pub async fn get_picture(data: Path<String>, db: DataDB) -> HttpResponse {
+    let picture_id: String = data.into_inner();
+    let res: Vec<String> = get_picture_data_by_id(&db, picture_id).await.unwrap();
+
+    if res.is_empty() {
+        HttpResponse::NotFound().body("Not Found!")
+    } else {
+        HttpResponse::Ok().body(res[0].clone())
     }
 }
