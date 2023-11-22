@@ -1,0 +1,285 @@
+*, *::before, *::after {
+    margin: 0;
+    box-sizing: border-box;
+    font-family: Poppins, Roboto, "Segoe UI", sans-serif;
+}
+
+:root {
+    /* --main-bg: #0a0a0a; */
+    --main-bg: #18181b;
+    --text-color: #f8fafc;
+    --accent-color: #9f1239;
+}
+
+body {
+    min-height: 100vh;
+    max-height: 100vh;
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    grid-template-rows: 64px 1fr 96px;
+
+    background-color: #0a0a0a;
+    color: var(--text-color);
+}
+
+aside {
+    grid-area: 1/1/4/2;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin: .5rem 0 .5rem .5rem;
+    padding: .5rem 0 .5rem .5rem;
+
+    background-color: var(--main-bg);
+    border-radius: .75rem 0 0 .75rem;
+}
+
+aside .logo {
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-align: center;
+    font-family: "Poppins", Roboto, sans-serif;
+}
+
+aside nav {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+}
+
+aside nav button.nav-link {
+    padding: .25rem;
+    aspect-ratio: 1/1;
+    border: none;
+    border-radius: .5rem 0 0 .5rem;
+
+    background-color: rgba(255, 255, 255, 0.15);
+    color: white;
+    cursor: pointer;
+    transition: background-color 300ms, color 300ms;
+}
+
+aside nav button.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+aside nav button.nav-link.active {
+    background-color: var(--accent-color);
+    color: white;
+}
+
+header {
+    display: flex;
+    flex-direction: column;
+
+    padding: 0 1rem;
+
+    background-color: var(--main-bg);
+    margin: .5rem;
+    border-radius: .75rem;
+
+}
+
+header .title {
+    font-size: 1.5rem;
+    font-weight: bolder;
+    padding: .5rem;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    /* padding: .5rem 0; */
+    gap: .5rem;
+    overflow: auto;
+
+    background-color: var(--main-bg);
+    border-radius: .75rem;
+    margin: .5rem;
+}
+
+main[data-page="artists"],
+main[data-page="albums"] {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(128px, 256px));
+    padding: .5rem;
+}
+
+main .song {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .75rem 1rem;
+
+    /* border-bottom: 2px solid #0a0a0a; */
+    transition: background-color 300ms;
+}
+
+main .song:hover {
+    background-color: rgba(127, 127, 127, .1);
+}
+
+main .song .icons {
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+}
+
+main .artist,
+main .album {
+    display: flex;
+    aspect-ratio: 1/1;
+
+    align-items: center;
+    justify-content: center;
+    padding: .75rem 1rem;
+
+    background-color: transparent;
+    color: white;
+    font-size: 1rem;
+    border: 2px solid #0a0a0a;
+    border-radius: .5rem;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 300ms;
+}
+
+main .artist:hover,
+main .album:hover {
+    background-color: rgba(127, 127, 127, .1);
+}
+
+.play-bar {
+    display: grid;
+    grid-template-columns: 1fr 3fr 1fr;
+    gap: 1.5rem;
+    padding: .5rem;
+
+    margin: .5rem;
+
+    background-color: var(--main-bg);
+    border-radius: .75rem;
+}
+
+.play-bar .song-info {
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+}
+
+.play-bar .song-info img {
+    width: 64px;
+    aspect-ratio: 1/1;
+    border-radius: .2rem;
+}
+
+.play-bar .song-info .song-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.play-bar .player-controls {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+}
+
+.play-bar .player-controls .player-bar {
+    width: 100%;
+    max-width: 625px;
+    display: flex;
+    gap: .5rem;
+}
+
+.play-bar .player-controls .player-bar input[type="range"] {
+    width: 100%;
+    max-width: 600px;
+    accent-color: var(--accent-color);
+}
+
+.play-bar .player-controls .control-btns {
+    display: flex;
+    /* align-items: center; */
+    justify-content: center;
+    gap: .5rem;
+
+}
+
+.play-bar .more-controls {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.play-bar .player-controls button,
+.play-bar .more-controls button {
+    color: white;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+
+    transition: color 300ms;
+}
+
+.play-bar .player-controls button:hover,
+.play-bar .more-controls button:hover {
+    color: var(--accent-color);
+}
+
+.play-bar .player-controls button svg {
+    width: 32px;
+    aspect-ratio: 1/1;
+}
+
+#playBtn {
+    border-radius: 50%;
+    background-color: var(--accent-color);
+    padding: .5rem;
+    aspect-ratio: 1/1;
+    transition: background-color 300ms;
+}
+
+#playBtn:hover {
+    color: white;
+    background-color: #be123c;
+}
+
+#playBtn svg {
+    pointer-events: none;
+    display: block;
+}
+
+#playBtn.paused svg.playing {
+    display: none;
+}
+
+#playBtn:not(.paused) svg.paused {
+    display: none;
+}
+
+.play-bar .more-controls {
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+}
+
+.icon {
+    width: 32px;
+    aspect-ratio: 1/1;
+}
+
+.song button.play-btn {
+    background-color: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+
+    transition: color 300ms;
+}
+
+.song button.play-btn:hover {
+    color: var(--accent-color);
+}
