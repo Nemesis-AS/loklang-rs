@@ -283,3 +283,7 @@ main .album:hover {
 .song button.play-btn:hover {
     color: var(--accent-color);
 }
+
+button.active-btn {
+    color: var(--accent-color) !important;
+}
