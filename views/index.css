@@ -16,7 +16,7 @@ body {
     max-height: 100vh;
     display: grid;
     grid-template-columns: 96px 1fr;
-    grid-template-rows: 64px 1fr 96px;
+    grid-template-rows: 64px 1fr 128px;
 
     background-color: #0a0a0a;
     color: var(--text-color);
@@ -198,6 +198,7 @@ main .album:hover {
     width: 100%;
     max-width: 600px;
     accent-color: var(--accent-color);
+    cursor: pointer;
 }
 
 .play-bar .player-controls .control-btns {
@@ -210,6 +211,7 @@ main .album:hover {
 
 .play-bar .more-controls {
     display: flex;
+    gap: .5rem;
     justify-content: flex-end;
     align-items: center;
 }
@@ -260,12 +262,6 @@ main .album:hover {
     display: none;
 }
 
-.play-bar .more-controls {
-    display: flex;
-    gap: .5rem;
-    align-items: center;
-}
-
 .icon {
     width: 32px;
     aspect-ratio: 1/1;
@@ -282,6 +278,12 @@ main .album:hover {
 
 .song button.play-btn:hover {
     color: var(--accent-color);
+}
+
+#volumeSlider {
+    accent-color: var(--accent-color);
+    cursor: pointer;
+    max-width: 128px;
 }
 
 button.active-btn {

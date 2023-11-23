@@ -41,6 +41,9 @@ class App {
         const prevBtn = document.getElementById("prevBtn");
         const loopBtn = document.getElementById("loopBtn");
         const shuffleBtn = document.getElementById("shuffleBtn");
+        const volumeSlider = document.getElementById("volumeSlider");
+
+        volumeSlider.value = this.player.volume;
 
         this.player.addEventListener("timeupdate", e => {
             const value = (e.target.currentTime / e.target.duration) * 100;
@@ -71,6 +74,10 @@ class App {
             }
 
             this.changeByOffset(1);
+        });
+
+        this.player.addEventListener("volumechange", e => {
+            volumeSlider.value = e.target.volume;
         });
 
         this.sliderEl.addEventListener("input", e => {
@@ -128,6 +135,10 @@ class App {
             }
         });
 
+        volumeSlider.addEventListener("input", e => {
+            this.player.volume = e.target.value;
+        });
+
         this.fetchPlaylist();
     }
 
@@ -149,9 +160,8 @@ class App {
         this.player.src = `/api/v1/stream/${id}`;
         this.player.play();
 
-        // @todo! Update the play bar
         const songRes = await fetch(`/api/v1/songs/${id}`);
-        const songInfo = await songRes.json(); // @temp
+        const songInfo = await songRes.json();
 
         const imgRes = await fetch(`/api/v1/picture/${songInfo[0].pictures[0].id}`);
         const img = await imgRes.text();
@@ -177,6 +187,32 @@ class App {
             this.currentIdx = newIdx;
             this.playMedia(media.id);
         }
+    }
+
+    async playByArtist(artistId) {
+        const id = encodeURIComponent(artistId);
+        const res = await fetch("/api/v1/artists/" + id);
+        const songs = await res.json();
+
+        this.playlist = songs;
+        this.currentIdx = 0;
+
+        const mediaId = songs[0].id;
+        this.playMedia(mediaId);
+        document.getElementById("playBtn").classList.remove("paused");
+    }
+
+    async playByAlbum(albumId) {
+        const id = encodeURIComponent(albumId);
+        const res = await fetch("/api/v1/albums/" + id);
+        const songs = await res.json();
+
+        this.playlist = songs;
+        this.currentIdx = 0;
+
+        const mediaId = songs[0].id;
+        this.playMedia(mediaId);
+        document.getElementById("playBtn").classList.remove("paused");
     }
 
     async renderPage() {
@@ -229,6 +265,8 @@ class App {
                 this.playMedia(song.id);
                 this.currentIdx = Number(idx);
                 document.getElementById("playBtn").classList.remove("paused");
+
+                this.fetchPlaylist();
             });
             iconsDiv.appendChild(playBtn);
     
@@ -252,6 +290,9 @@ class App {
         for (let idx in artists) {
             const artist = artists[idx];
             const artistDiv = this.elWithClasses("button", ["artist"]);
+            artistDiv.addEventListener("click", e => {
+                this.playByArtist(artist);
+            });
     
             // const iconsDiv = this.elWithClasses("div", ["icons"]);
     
@@ -282,6 +323,9 @@ class App {
         for (let idx in albums) {
             const album = albums[idx];
             const albumDiv = this.elWithClasses("div", ["album"]);
+            albumDiv.addEventListener("click", e => {
+                this.playByAlbum(album);
+            });
     
             // const iconsDiv = this.elWithClasses("div", ["icons"]);
     
