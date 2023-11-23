@@ -7,6 +7,7 @@ use actix_web::{
     web::{scope, Data},
     App, HttpServer,
 };
+use actix_files::Files;
 
 use r2d2::Pool;
 use r2d2_sqlite::{self, SqliteConnectionManager};
@@ -38,7 +39,7 @@ async fn main() -> std::io::Result<()> {
 
     setup_db(&pool).await;
 
-    println!("Starting Server...");
+    println!("Started server at PORT 8000!");
     HttpServer::new(move || {
         App::new().app_data(Data::new(pool.clone())).service(
             scope("/api/v1")
@@ -50,7 +51,7 @@ async fn main() -> std::io::Result<()> {
                 .service(get_songs_by_artist)
                 .service(get_stream_by_id)
                 .service(get_picture),
-        )
+        ).service(Files::new("/", "./views").index_file("index.html"))
     })
     .bind(("0.0.0.0", 8000))?
     .run()
