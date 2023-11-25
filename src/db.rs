@@ -29,7 +29,7 @@ pub async fn create_tables(pool: &Pool) {
     let conn = pool.get().unwrap();
 
     conn.execute(
-        "CREATE TABLE IF NOT EXISTS songs(id TEXT NOT NULL PRIMARY KEY, filepath TEXT NOT NULL, title TEXT, artists TEXT, album TEXT, album_artists TEXT, year TEXT, genre TEXT, copyright TEXT, track_number TEXT, disc_number TEXT, track_total TEXT, disc_total TEXT, date TEXT, duration INT)",
+        "CREATE TABLE IF NOT EXISTS songs(id TEXT NOT NULL PRIMARY KEY, filepath TEXT NOT NULL, title TEXT, artists TEXT, album TEXT, album_artists TEXT, year TEXT, genre TEXT, copyright TEXT, track_number TEXT, disc_number TEXT, track_total TEXT, disc_total TEXT, date TEXT, duration INT, marked INT DEFAULT 1)",
         [],
     )
     .expect("An Error occurred while creating songs table!");
@@ -44,7 +44,7 @@ pub async fn add_songs(pool: &Pool, data: Vec<AudioMetadata>) -> Result<(), Erro
     let conn = pool.get().unwrap();
 
     let mut stmt = conn
-        .prepare("INSERT OR IGNORE INTO songs VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+        .prepare("INSERT OR IGNORE INTO songs VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
         .unwrap();
 
     let mut stmt2 = conn
@@ -67,7 +67,8 @@ pub async fn add_songs(pool: &Pool, data: Vec<AudioMetadata>) -> Result<(), Erro
             item.track_total.as_str(),
             item.disc_total.as_str(),
             item.date.as_str(),
-            item.duration
+            item.duration,
+            1
         ])
         .expect("An Error Occurred while inserting song to the DB!");
 
@@ -83,7 +84,29 @@ pub async fn add_songs(pool: &Pool, data: Vec<AudioMetadata>) -> Result<(), Erro
                 ])
                 .expect("An Error occurred while inserting image to the DB!");
         }
+
+        conn.execute("UPDATE songs SET marked = 1 WHERE id = ?", [item.id.as_str()]).expect("An Error occurred while updating song data!");
     }
+
+    remove_unmarked_songs(&pool).await.unwrap();
+    conn.execute("UPDATE songs SET marked = 0", []).expect("An Error occurred while updating song data!");
+    
+    Ok(())
+}
+
+pub async fn remove_unmarked_songs(pool: &Pool) -> Result<(), Error> {
+    let pool = pool.clone();
+    let conn = pool.get().unwrap();
+
+    let mut stmt = conn.prepare("SELECT id FROM songs WHERE marked = 0").unwrap();
+    let _res: Result<(), rusqlite::Error> = stmt.query_map([], |row| {
+        let song_id: String = row.get(0).unwrap();
+
+        conn.execute("DELETE FROM pictures WHERE song_id = ?", [song_id]).expect("An Error occurred while deleting unmarked pictures");
+        Ok(())
+    }).and_then(Iterator::collect);
+
+    conn.execute("DELETE FROM songs WHERE marked = 0", []).expect("An Error occurred while deleting unmarked songs");
 
     Ok(())
 }
