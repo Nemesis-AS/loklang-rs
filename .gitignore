@@ -2,3 +2,6 @@
 /data
 TODO.md
 config.ini
+
+# Aseprite files
+*.ase
