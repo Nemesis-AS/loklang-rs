@@ -139,6 +139,11 @@ class App {
             this.player.volume = e.target.value;
         });
 
+        this.songImgEl.addEventListener("error", e => {
+            if (!this.songImgEl.src === "./images/404.png")
+                this.songImgEl.src = "./images/404.png";
+        });
+
         this.fetchPlaylist();
     }
 
@@ -217,8 +222,6 @@ class App {
 
     async renderPage() {
         switch (this.page) {
-            case "home":
-                break;
             case "songs":
                 const songRes = await fetch("/api/v1/songs");
                 const songs = await songRes.json();
