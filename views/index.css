@@ -115,6 +115,10 @@ main .song {
     transition: background-color 300ms;
 }
 
+main .song > * {
+    flex: 1 0 0;
+}
+
 main .song:hover {
     background-color: rgba(127, 127, 127, .1);
 }
