@@ -7,6 +7,8 @@ use actix_web::{
     HttpRequest, HttpResponse, Responder,
 };
 
+use crate::utils::static_resolver::handle_embedded_file;
+
 use crate::{
     db::{
         get_picture_data_by_id, handle_filter_action, handle_get_all_action, handle_song_action,
@@ -107,4 +109,15 @@ pub async fn get_picture(data: Path<String>, db: DataDB) -> HttpResponse {
     } else {
         HttpResponse::Ok().body(res[0].clone())
     }
+}
+
+// View Routes
+#[get("/")]
+pub async fn index() -> HttpResponse {
+    handle_embedded_file("index.html")
+}
+
+#[get("/dist/{_:.*}")]
+async fn dist(path: Path<String>) -> impl Responder {
+    handle_embedded_file(path.as_str())
 }
