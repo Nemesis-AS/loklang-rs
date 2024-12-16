@@ -3,20 +3,14 @@ mod metadata;
 mod routes;
 mod utils;
 
-use actix_web::{
-    web::{scope, Data},
-    App, HttpServer,
-};
+use actix_web::{web::Data, App, HttpServer};
 
 use configparser::ini::Ini;
 
 use r2d2::Pool;
 use r2d2_sqlite::{self, SqliteConnectionManager};
 
-use routes::{
-    dist, get_albums, get_artists, get_picture, get_song_by_id, get_songs, get_songs_by_album,
-    get_songs_by_artist, get_stream_by_id, index,
-};
+use routes::register;
 
 use std::path::PathBuf;
 use std::{collections::HashMap, fs::create_dir_all};
@@ -71,20 +65,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(Data::new(pool.clone()))
-            .service(
-                scope("/api/v1")
-                    .service(get_songs)
-                    .service(get_song_by_id)
-                    .service(get_albums)
-                    .service(get_songs_by_album)
-                    .service(get_artists)
-                    .service(get_songs_by_artist)
-                    .service(get_stream_by_id)
-                    .service(get_picture),
-            )
-            .service(index)
-            .service(dist)
-        //.service(Files::new("/", "./views").index_file("index.html"))
+            .configure(register)
     })
     .bind(("0.0.0.0", 8000))?
     .run()
