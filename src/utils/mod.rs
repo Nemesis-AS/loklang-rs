@@ -1,3 +1,5 @@
+pub mod static_resolver;
+
 use std::{fs, path::PathBuf};
 
 use crate::metadata;

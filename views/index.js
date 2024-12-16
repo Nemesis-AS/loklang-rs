@@ -140,8 +140,8 @@ class App {
         });
 
         this.songImgEl.addEventListener("error", e => {
-            if (!this.songImgEl.src === "./images/404.png")
-                this.songImgEl.src = "./images/404.png";
+            if (!this.songImgEl.src === "./dist/images/404.png")
+                this.songImgEl.src = "./dist/images/404.png";
         });
 
         this.fetchPlaylist();

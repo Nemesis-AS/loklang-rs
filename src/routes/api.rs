@@ -17,7 +17,6 @@ use crate::{
 
 type DataDB = Data<r2d2::Pool<r2d2_sqlite::SqliteConnectionManager>>;
 
-// GET songs
 #[get("/songs")]
 pub async fn get_songs(db: DataDB) -> HttpResponse {
     let res = handle_song_action(&db, SongActions::GetAllSongs)
@@ -107,4 +106,16 @@ pub async fn get_picture(data: Path<String>, db: DataDB) -> HttpResponse {
     } else {
         HttpResponse::Ok().body(res[0].clone())
     }
+}
+
+pub fn register(config: &mut actix_web::web::ServiceConfig) {
+    config
+        .service(get_songs)
+        .service(get_song_by_id)
+        .service(get_albums)
+        .service(get_songs_by_album)
+        .service(get_artists)
+        .service(get_songs_by_artist)
+        .service(get_stream_by_id)
+        .service(get_picture);
 }
