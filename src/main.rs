@@ -5,6 +5,8 @@ mod utils;
 
 use actix_web::{web::Data, App, HttpServer};
 
+use actix_cors::Cors;
+
 use configparser::ini::Ini;
 
 use r2d2::Pool;
@@ -63,7 +65,10 @@ async fn main() -> std::io::Result<()> {
 
     println!("Started server at PORT 8000!");
     HttpServer::new(move || {
+        let cors = Cors::permissive();
+
         App::new()
+            .wrap(cors)
             .app_data(Data::new(pool.clone()))
             .configure(register)
     })

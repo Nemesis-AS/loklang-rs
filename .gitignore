@@ -3,5 +3,8 @@
 TODO.md
 config.ini
 
+# Client Build Files
+/static
+
 # Aseprite files
 *.ase
