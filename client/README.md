@@ -2,6 +2,9 @@
 
 Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
 
+## To Do
+Remove `PUBLIC_DEV_BASE_URL` from `.env`(?)
+
 ## Creating a project
 
 If you're seeing this, you've probably already done this step. Congrats!

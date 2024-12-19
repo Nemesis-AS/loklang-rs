@@ -1,13 +1,22 @@
 <script>
+	import { untrack } from 'svelte';
 	import Icon from '@iconify/svelte';
 
 	import IconButton from '$lib/components/ui/IconButton.svelte';
 	import Slider from '$lib/components/ui/Slider.svelte';
 
-	import { formatArtists } from '$lib/utils';
+	import { formatArtists, formatDuration } from '$lib/utils';
 
 	import { layoutData } from '$lib/stores/LayoutData.svelte';
-	import { playerState, togglePause, toggleMute } from '$lib/stores/playerState.svelte';
+	import {
+		playerState,
+		togglePause,
+		toggleMute,
+		initializeAudioPlayer,
+
+		setCurrTime
+
+	} from '$lib/stores/playerState.svelte';
 	import { PUBLIC_DEV_BASE_URL } from '$env/static/public';
 
 	const currentTrack = $derived(playerState.currentTrack);
@@ -15,6 +24,14 @@
 
 	let trackPicture = $state('');
 
+	// @todo! Move this into a function in playerState?
+	$effect(() => {
+		if (!playerState.audioPlayer) return;
+
+		playerState.audioPlayer.volume = playerState.muted ? 0 : playerState.volume / 100;
+	});
+
+	// @todo! Use skeleton or loading image instead of 404 when loading an image for a song
 	$effect(() => {
 		if (!currentTrack || currentTrack.pictures.length === 0) {
 			trackPicture = '/404.png';
@@ -30,6 +47,10 @@
 				console.log('An error occurred while fetching song image!');
 				trackPicture = '/404.png';
 			});
+	});
+
+	$effect(() => {
+		untrack(() => initializeAudioPlayer());
 	});
 
 	function openTrackInfoPanel() {
@@ -84,7 +105,36 @@
 				<Icon icon="lucide:skip-forward" class="size-5" />
 			</IconButton>
 		</div>
-		<Slider class="mt-2 w-full max-w-screen-sm" value={0} max={100} step={1} />
+
+		<div class="flex w-full items-center gap-2">
+			<span>
+				{!isTrackEmpty ? formatDuration(playerState.currTime) : '0:00'}
+			</span>
+			<Slider
+				bind:value={() => {
+					if (playerState.audioPlayer && playerState.currentTrack) {
+						return Math.round(
+							(playerState.currTime / playerState.currentTrack.duration) * 100
+						);
+					}
+					return 0;
+				},
+				(value) => {
+					if (playerState.audioPlayer && playerState.currentTrack) {
+						playerState.currTime = (value / 100) * playerState.currentTrack.duration;
+					}
+				}}
+				class="w-full max-w-screen-sm"
+				max={100}
+				step={1}
+				oninput={() => setCurrTime(playerState.currTime)}
+			/>
+			<span>
+				{!isTrackEmpty
+					? formatDuration(playerState.currentTrack ? playerState.currentTrack.duration : 0)
+					: '0:00'}
+			</span>
+		</div>
 	</div>
 	<div class="flex flex-1 items-center justify-end space-x-4">
 		<div class="flex items-center space-x-2">

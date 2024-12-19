@@ -1,5 +1,5 @@
 <script>
-	let { value = $bindable(50), min = 0, max = 100, step = 1, class: className = '' } = $props();
+	let { value = $bindable(50), min = 0, max = 100, step = 1, class: className = '', oninput = null } = $props();
 </script>
 
 <div class={'flex items-center ' + className}>
@@ -15,6 +15,7 @@
 			{min}
 			{max}
 			{step}
+			{oninput}
 		/>
 	</div>
 </div>
