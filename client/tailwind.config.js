@@ -5,7 +5,8 @@ export default {
 	theme: {
 		extend: {
 			fontFamily: {
-				"Inter": ['Inter', 'sans-serif']
+				Inter: ['Inter', 'sans-serif'],
+				Doto: ['Doto', 'Inter', 'sans-serif']
 			}
 		}
 	},

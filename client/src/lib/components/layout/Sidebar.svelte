@@ -10,6 +10,7 @@
 		{ href: '/favorites', label: 'Favorites', icon: 'lucide:heart' }
 	];
 
+	// @todo! Remove this dummy data
 	const playlists = [
 		{
 			id: 1,
@@ -46,6 +47,8 @@
 
 <div class="hidden w-64 overflow-y-auto bg-gray-100 p-4 md:block">
 	<nav class="space-y-2">
+		<h1 class="text-center font-Doto uppercase text-2xl font-extrabold py-2">Loklang</h1>
+
 		{#each links as link}
 			<a
 				href={link.href}
