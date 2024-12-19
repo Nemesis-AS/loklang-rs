@@ -11,7 +11,7 @@ pub async fn index() -> HttpResponse {
     handle_embedded_file("index.html")
 }
 
-#[get("/dist/{_:.*}")]
+#[get("/{_:.*}")]
 pub async fn dist(path: Path<String>) -> impl Responder {
     handle_embedded_file(path.as_str())
 }

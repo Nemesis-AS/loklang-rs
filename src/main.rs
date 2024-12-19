@@ -20,7 +20,7 @@ use std::{collections::HashMap, fs::create_dir_all};
 use rust_embed::Embed;
 
 #[derive(Embed)]
-#[folder = "views/"]
+#[folder = "static/"]
 pub struct Asset;
 
 async fn setup_db(pool: &Pool<SqliteConnectionManager>, config: &HashMap<String, Option<String>>) {
