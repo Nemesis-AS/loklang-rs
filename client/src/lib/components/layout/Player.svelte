@@ -152,7 +152,7 @@
 			<Slider bind:value={playerState.volume} class="w-24" />
 		</div>
 		<IconButton onclick={openLyricsPanel}>
-			<Icon icon="lucide:mic" class="size-5" />
+			<Icon icon="lucide:mic-vocal" class="size-5" />
 		</IconButton>
 		<IconButton>
 			<Icon icon="lucide:maximize" class="size-5" />
