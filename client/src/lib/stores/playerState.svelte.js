@@ -4,6 +4,8 @@
 
 import { PUBLIC_DEV_BASE_URL } from '$env/static/public';
 
+// @todo! Add loop playlist option
+
 // eslint-disable-next-line no-undef
 export const playerState = $state({
 	/** @type {ITrack | null} */
@@ -44,6 +46,9 @@ export async function playTrack(track) {
 
 	playerState.currentTrack = track;
 	playerState.paused = false;
+	
+	// Set current playlist if not set
+	// Set the proper trackIndex
 
 	playerState.audioPlayer.src = `${PUBLIC_DEV_BASE_URL}/stream/${track.id}`;
 	playerState.audioPlayer.load();
