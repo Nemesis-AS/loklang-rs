@@ -5,6 +5,8 @@ mod utils;
 
 use actix_web::{web::Data, App, HttpServer};
 
+use actix_cors::Cors;
+
 use configparser::ini::Ini;
 
 use r2d2::Pool;
@@ -18,7 +20,7 @@ use std::{collections::HashMap, fs::create_dir_all};
 use rust_embed::Embed;
 
 #[derive(Embed)]
-#[folder = "views/"]
+#[folder = "static/"]
 pub struct Asset;
 
 async fn setup_db(pool: &Pool<SqliteConnectionManager>, config: &HashMap<String, Option<String>>) {
@@ -28,7 +30,7 @@ async fn setup_db(pool: &Pool<SqliteConnectionManager>, config: &HashMap<String,
     let config_path: String = config.get("rootdir").unwrap_or(&def_path).clone().unwrap();
 
     let path: PathBuf = PathBuf::from(config_path);
-    let info = utils::scan_dir(path);
+    let info: Vec<metadata::AudioMetadata> = utils::scan_dir(path);
 
     db::add_songs(pool, info).await.unwrap();
 }
@@ -38,8 +40,8 @@ fn load_config() -> HashMap<String, Option<String>> {
 
     if let Ok(_) = std::fs::metadata(&config_path) {
         let mut ini: Ini = Ini::new();
-        let map = ini.load(config_path).unwrap();
-        let config = map.get("config").unwrap();
+        let map: HashMap<String, HashMap<String, Option<String>>> = ini.load(config_path).unwrap();
+        let config: &HashMap<String, Option<String>> = map.get("config").unwrap();
 
         if config.is_empty() {
             return HashMap::new();
@@ -47,6 +49,12 @@ fn load_config() -> HashMap<String, Option<String>> {
             return config.clone();
         }
     }
+
+    // If the config file does not exist, create it with default values
+    let mut ini: Ini = Ini::new();
+    ini.set("config", "port", Some(String::from("8000")));
+    ini.set("config", "rootdir", Some(String::from("D:\\Music\\Test")));
+    ini.write(config_path).unwrap();
 
     HashMap::new()
 }
@@ -61,13 +69,24 @@ async fn main() -> std::io::Result<()> {
     let config = load_config();
     setup_db(&pool, &config).await;
 
-    println!("Started server at PORT 8000!");
+    let port: u16 = config
+        .get("port")
+        .unwrap_or(&Some(String::from("8000")))
+        .clone()
+        .unwrap()
+        .parse()
+        .unwrap();
+    
+    println!("Started server at PORT {}!", port);
     HttpServer::new(move || {
+        let cors: Cors = Cors::permissive();
+
         App::new()
+            .wrap(cors)
             .app_data(Data::new(pool.clone()))
             .configure(register)
     })
-    .bind(("0.0.0.0", 8000))?
+    .bind(("0.0.0.0", port))?
     .run()
     .await
 }
