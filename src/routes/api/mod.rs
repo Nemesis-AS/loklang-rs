@@ -108,22 +108,34 @@
 //     }
 // }
 
+mod albums;
+mod artists;
+mod pictures;
 mod songs;
+mod streams;
 
 use actix_web::web;
 
+use albums::register as register_albums;
+use artists::register as register_artists;
+use pictures::register as register_pictures;
 use songs::register as register_songs;
+use streams::register as register_streams;
 
 pub fn register(config: &mut actix_web::web::ServiceConfig) {
+    config.service(web::scope("/albums").configure(register_albums));
+    config.service(web::scope("/artists").configure(register_artists));
+    config.service(web::scope("/pictures").configure(register_pictures));
     config.service(web::scope("/songs").configure(register_songs));
+    config.service(web::scope("/stream").configure(register_streams));
 
     // config;
-        // .service(get_songs)
-        // .service(get_song_by_id)
-        // .service(get_albums)
-        // .service(get_songs_by_album)
-        // .service(get_artists)
-        // .service(get_songs_by_artist)
-        // .service(get_stream_by_id)
-        // .service(get_picture);
+    // .service(get_songs)
+    // .service(get_song_by_id)
+    // .service(get_albums)
+    // .service(get_songs_by_album)
+    // .service(get_artists)
+    // .service(get_songs_by_artist)
+    // .service(get_stream_by_id)
+    // .service(get_picture);
 }

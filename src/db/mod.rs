@@ -292,7 +292,7 @@ pub mod types;
 use types::DbPool;
 
 pub fn init_db() -> DbPool {
-    let db_url: String = std::env::var("DATABASE_URL").unwrap_or(String::from("data/db.sqlite"));
+    let db_url: String = std::env::var("DATABASE_URL").unwrap_or(String::from("data/db.sqlite3"));
 
     let manager: r2d2::ConnectionManager<SqliteConnection> =
         r2d2::ConnectionManager::<SqliteConnection>::new(db_url);
