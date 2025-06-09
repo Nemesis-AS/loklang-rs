@@ -19,6 +19,8 @@ use std::{collections::HashMap, fs::create_dir_all};
 
 use rust_embed::Embed;
 
+use crate::db::run_migrations;
+
 #[derive(Embed)]
 #[folder = "static/"]
 pub struct Asset;
@@ -70,6 +72,7 @@ async fn main() -> std::io::Result<()> {
 
     let config = load_config();
     // setup_db(&pool, &config).await;
+    run_migrations(&pool);
 
     let port: u16 = config
         .get("port")
