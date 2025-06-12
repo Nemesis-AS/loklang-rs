@@ -15,6 +15,17 @@ pub struct Song {
     pub created_at: NaiveDateTime,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
+#[diesel(table_name = crate::db::schema::songs)]
+pub struct SongInsertable {
+    pub id: String,
+    pub title: String,
+    pub file_path: String,
+    pub duration: Option<i32>,
+    pub album_id: Option<String>,
+    pub cover_image: Option<String>,
+}
+
 #[derive(Debug, Clone, Selectable, Queryable, Identifiable, Serialize, Deserialize, Insertable, AsChangeset)]
 #[diesel(table_name = crate::db::schema::artists)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
@@ -23,6 +34,14 @@ pub struct Artist {
     pub name: String,
     pub sort_name: String,
     pub created_at: NaiveDateTime,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
+#[diesel(table_name = crate::db::schema::artists)]
+pub struct ArtistInsertable {
+    pub id: String,
+    pub name: String,
+    pub sort_name: String
 }
 
 #[derive(Debug, Clone, Selectable, Queryable, Identifiable, Serialize, Deserialize, Insertable, AsChangeset)]
@@ -34,6 +53,15 @@ pub struct Album {
     pub release_date: Option<String>,
     pub cover_image: Option<String>,
     pub created_at: NaiveDateTime,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
+#[diesel(table_name = crate::db::schema::albums)]
+pub struct AlbumInsertable {
+    pub id: String,
+    pub title: String,
+    pub release_date: Option<String>,
+    pub cover_image: Option<String>
 }
 
 #[derive(Debug, Clone, Selectable, Queryable, Identifiable, Serialize, Deserialize, Insertable, AsChangeset)]
