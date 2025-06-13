@@ -9,8 +9,8 @@ use actix_cors::Cors;
 
 use configparser::ini::Ini;
 
-use r2d2::Pool;
-use r2d2_sqlite::{self, SqliteConnectionManager};
+// use r2d2::Pool;
+// use r2d2_sqlite::{self, SqliteConnectionManager};
 
 use routes::register;
 
@@ -19,20 +19,22 @@ use std::{collections::HashMap, fs::create_dir_all};
 
 use rust_embed::Embed;
 
+use crate::db::run_migrations;
+use crate::db::types::DbPool;
+
 #[derive(Embed)]
 #[folder = "static/"]
 pub struct Asset;
 
-async fn setup_db(pool: &Pool<SqliteConnectionManager>, config: &HashMap<String, Option<String>>) {
-    db::create_tables(pool).await;
-
+fn setup_db(pool: &DbPool, config: &HashMap<String, Option<String>>) {
+    // db::create_tables(pool).await;
     let def_path: Option<String> = Some(String::from("D:\\Music\\Test"));
     let config_path: String = config.get("rootdir").unwrap_or(&def_path).clone().unwrap();
 
     let path: PathBuf = PathBuf::from(config_path);
     let info: Vec<metadata::AudioMetadata> = utils::scan_dir(path);
 
-    db::add_songs(pool, info).await.unwrap();
+    db::insert::insert_metadata(pool, info);
 }
 
 fn load_config() -> HashMap<String, Option<String>> {
@@ -63,11 +65,16 @@ fn load_config() -> HashMap<String, Option<String>> {
 async fn main() -> std::io::Result<()> {
     create_dir_all("./data")?;
 
-    let manager = SqliteConnectionManager::file("data/db.sqlite");
-    let pool = Pool::new(manager).unwrap();
+    // let manager = SqliteConnectionManager::file("data/db.sqlite");
+    // let pool = Pool::new(manager).unwrap();
+
+    let pool: db::types::DbPool = db::init_db();
 
     let config = load_config();
-    setup_db(&pool, &config).await;
+    run_migrations(&pool);
+
+    // Add metadata to DB
+    setup_db(&pool, &config);
 
     let port: u16 = config
         .get("port")

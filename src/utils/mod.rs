@@ -35,18 +35,18 @@ pub fn scan_dir(dir_path: PathBuf) -> Vec<metadata::AudioMetadata> {
     info
 }
 
-pub fn serialize_string_arr(arr: &Vec<String>) -> String {
-    let mut out: String = String::new();
+// pub fn serialize_string_arr(arr: &Vec<String>) -> String {
+//     let mut out: String = String::new();
 
-    for item in arr {
-        if !out.is_empty() {
-            out.push_str(", ");
-        }
-        out.push_str(item);
-    }
+//     for item in arr {
+//         if !out.is_empty() {
+//             out.push_str(", ");
+//         }
+//         out.push_str(item);
+//     }
 
-    out
-}
+//     out
+// }
 
 pub fn extract_arr(value: &str, split_char: &str) -> Vec<String> {
     value.split(split_char).map(String::from).collect()

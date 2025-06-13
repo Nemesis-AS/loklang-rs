@@ -8,3 +8,5 @@ config.ini
 
 # Aseprite files
 *.ase
+
+.env
