@@ -12,7 +12,7 @@
 			<div class="flex cursor-pointer items-center justify-between rounded p-2 hover:bg-gray-100">
 				<!-- onClick={() => handleTrackClick(track)} -->
 				<div>
-					<a href="/artists/{artist}" class="font-semibold">{artist}</a>
+					<a href="/artists/{artist.name}" class="font-semibold">{artist.name}</a>
 					<!-- <p class="text-sm text-gray-600">{formatArtists(track.artists)} - {track.album}</p> -->
 				</div>
 				<!-- <p class="text-sm text-gray-500">

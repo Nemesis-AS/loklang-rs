@@ -98,3 +98,16 @@ pub struct PlaylistSong {
     pub song_id: String,
     pub position: i32,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SongRes {
+    pub id: String,
+    pub title: String,
+    pub file_path: String,
+    pub duration: Option<i32>,
+    pub album_id: Option<String>,
+    pub cover_image: Option<String>,
+    pub created_at: NaiveDateTime,
+    pub artists: Option<Vec<Artist>>,
+    pub album: Option<Album>
+}

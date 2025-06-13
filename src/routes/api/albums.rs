@@ -1,6 +1,6 @@
 use crate::db::{
-    models::{Album, Song},
-    types::{DbError, DbPool},
+    models::{Album, Song, SongRes},
+    types::{DbError, DbPool}, utils::join_song_info,
 };
 use actix_web::{error, web, HttpResponse, Responder, Result as AResult};
 use diesel::{ExpressionMethods, QueryDsl, RunQueryDsl, SelectableHelper};
@@ -46,16 +46,21 @@ async fn get_songs_by_album(
     path: web::Path<String>,
     pool: web::Data<DbPool>,
 ) -> AResult<impl Responder> {
-    let album_id_input: String = path.into_inner();
+    let album_id_param: String = path.into_inner();
 
-    let songs = web::block(move || -> Result<Vec<Song>, DbError> {
+    let songs = web::block(move || -> Result<Vec<SongRes>, DbError> {
         use crate::db::schema::songs::dsl::*;
 
         let mut conn = pool.get()?;
 
-        let res: Vec<Song> = songs.filter(album_id.eq(album_id_input)).load(&mut conn)?;
+        let res: Vec<Song> = songs
+            .filter(album_id.eq(album_id_param))
+            .select(Song::as_select())
+            .load(&mut conn)?;
 
-        Ok(res)
+        let song_res: Vec<SongRes> = join_song_info(res, &mut conn).unwrap();
+
+        Ok(song_res)
     })
     .await?
     .map_err(error::ErrorInternalServerError)?;
