@@ -15,7 +15,7 @@
 	let trackPicture = $state('');
 
 	$effect(() => {
-		if (!currentTrack || currentTrack.pictures.length === 0) {
+		if (!currentTrack || !currentTrack.pictures || currentTrack.pictures.length === 0) {
 			trackPicture = '/404.png';
 			return;
 		}

@@ -8,12 +8,12 @@
 
 	{#if !success}
 		<p>An error occurred while loading albums...</p>
-	{:else}
+	{:else if albums.length > 0}
 		{#each albums as album}
 			<div class="flex cursor-pointer items-center justify-between rounded p-2 hover:bg-gray-100">
 				<!-- onClick={() => handleTrackClick(track)} -->
 				<div>
-					<a href="/albums/{album.title}" class="font-semibold">{album.title}</a>
+					<a href="/albums/{album.id}" class="font-semibold">{album.title}</a>
 					<!-- <p class="text-sm text-gray-600">{formatArtists(track.artists)} - {track.album}</p> -->
 				</div>
 				<!-- <p class="text-sm text-gray-500">
@@ -21,5 +21,7 @@
 				</p> -->
 			</div>
 		{/each}
+	{:else}
+		<p>No albums to display</p>
 	{/if}
 </div>

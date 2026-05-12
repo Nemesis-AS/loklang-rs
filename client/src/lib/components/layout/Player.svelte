@@ -33,7 +33,7 @@
 
 	// @todo! Use skeleton or loading image instead of 404 when loading an image for a song
 	$effect(() => {
-		if (!currentTrack || currentTrack.pictures.length === 0) {
+		if (!currentTrack || !currentTrack.pictures || currentTrack.pictures.length === 0) {
 			trackPicture = '/404.png';
 			return;
 		}

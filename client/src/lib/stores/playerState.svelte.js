@@ -8,14 +8,24 @@ import { PUBLIC_DEV_BASE_URL } from '$env/static/public';
 
 // eslint-disable-next-line no-undef
 export const playerState = $state({
-	/** @type {ITrack | null} */
-	currentTrack: null,
+	// /** @type {ITrack | null} */
+	// currentTrack: null,
 	volume: 50,
 	muted: false,
 	paused: false,
 	currTime: 0,
 	/** @type {HTMLAudioElement | null} */
-	audioPlayer: null
+	audioPlayer: null,
+
+	/** @type {ITrack | null} */
+	currentTrack: null,
+	/** @type {ITrack[]} */
+	tracks: [],
+	/** @type {ITrack[]} */
+	queue: [],
+	/** @type {ITrack[]} */
+	history: [],
+	playMode: 'repeat-off'
 });
 
 /**
@@ -46,7 +56,7 @@ export async function playTrack(track) {
 
 	playerState.currentTrack = track;
 	playerState.paused = false;
-	
+
 	// Set current playlist if not set
 	// Set the proper trackIndex
 
@@ -67,7 +77,7 @@ export function setCurrTime(value) {
 	if (value > playerState.currentTrack.duration) value = playerState.currentTrack.duration;
 
 	// @todo! Remove this, it is only present for DEBUGGING purposes
-	console.log("Setting time to", value);
+	console.log('Setting time to', value);
 	playerState.audioPlayer.currentTime = value;
 	playerState.currTime = value;
 }
@@ -92,6 +102,55 @@ export function toggleMute() {
 		playerState.audioPlayer.volume = 0;
 	} else {
 		playerState.audioPlayer.volume = playerState.volume / 100;
+	}
+}
+
+/**
+ *
+ * @param {*} ctx
+ * @param {ITrack} track Track to be played
+ * @description This function is to be used from the UI when playing songs. It will also load in the playlist info along with playing the track
+ */
+export function playTracksWithContext(ctx, track) {
+	// Context takes in the playlist ID
+	// Playlist data would be fetched
+	// Playlist ID: type:ID:sort
+	// Splits the playlist, moves prev tracks to history and next tracks to tracks
+
+	playTrack(track);
+}
+
+export function handlePrevious() {
+	if (!playerState.audioPlayer) return;
+
+	if (playerState.audioPlayer.currentTime > 5) {
+		playerState.audioPlayer.currentTime = 0;
+	} else {
+		if (playerState.history.length === 0)
+			if (playerState.currentTrack) playTrack(playerState.currentTrack);
+
+		let prevTrack = playerState.history.shift();
+		let currTrack = playerState.currentTrack;
+		if (currTrack) playerState.tracks.unshift(currTrack);
+		if (prevTrack) playTrack(prevTrack);
+	}
+}
+
+export function handleNext() {
+	if (!playerState.audioPlayer) return;
+
+	if (playerState.queue.length > 0) {
+		let currTrack = playerState.currentTrack;
+		if (currTrack) playerState.history.unshift(currTrack);
+
+		let nextTrack = playerState.queue.shift();
+		if (nextTrack) playTrack(nextTrack);
+	} else if (playerState.tracks.length > 0) {
+		let currTrack = playerState.currentTrack;
+		if (currTrack) playerState.history.unshift(currTrack);
+
+		let nextTrack = playerState.tracks.shift();
+		if (nextTrack) playTrack(nextTrack);
 	}
 }
 

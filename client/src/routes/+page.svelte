@@ -1,6 +1,6 @@
 <script>
 	import Icon from '@iconify/svelte';
-	
+
 	import IconButton from '$lib/components/ui/IconButton.svelte';
 	import { formatArtists } from '$lib/utils';
 
@@ -15,7 +15,7 @@
 	<div class="space-y-2 divide-y divide-gray-200">
 		{#if !success}
 			<p>An error occurred while loading tracks...</p>
-		{:else}
+		{:else if tracks.length > 0}
 			{#each tracks as track}
 				<div class="flex items-center justify-between rounded p-2">
 					<div class="flex items-center gap-4">
@@ -25,7 +25,9 @@
 
 						<div>
 							<h3 class="font-semibold">{track.title}</h3>
-							<p class="text-sm text-gray-600">{formatArtists(track.artists)} - {track.album}</p>
+							<p class="text-sm text-gray-600">
+								{formatArtists(track.artists)} - {track.album.title}
+							</p>
 						</div>
 					</div>
 					<p class="text-sm text-gray-500">
@@ -33,6 +35,8 @@
 					</p>
 				</div>
 			{/each}
+		{:else}
+			<p>No tracks to display</p>
 		{/if}
 	</div>
 </div>

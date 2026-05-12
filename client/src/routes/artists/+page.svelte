@@ -7,12 +7,12 @@
 	<h1 class="mb-4 text-2xl font-bold">Artists</h1>
 	{#if !success}
 		<p>An error occurred while loading artists...</p>
-	{:else}
+	{:else if artists.length > 0}
 		{#each artists as artist}
 			<div class="flex cursor-pointer items-center justify-between rounded p-2 hover:bg-gray-100">
 				<!-- onClick={() => handleTrackClick(track)} -->
 				<div>
-					<a href="/artists/{artist.name}" class="font-semibold">{artist.name}</a>
+					<a href="/artists/{artist.id}" class="font-semibold">{artist.name}</a>
 					<!-- <p class="text-sm text-gray-600">{formatArtists(track.artists)} - {track.album}</p> -->
 				</div>
 				<!-- <p class="text-sm text-gray-500">
@@ -20,5 +20,7 @@
 		</p> -->
 			</div>
 		{/each}
+	{:else}
+		<p>No artists to display</p>
 	{/if}
 </div>

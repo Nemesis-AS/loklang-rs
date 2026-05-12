@@ -6,9 +6,13 @@ export const load = async ({ fetch, params }) => {
 		const res = await fetch(`${PUBLIC_DEV_BASE_URL}/albums/${params.albumId}`);
 		const json = await res.json();
 
+		const trackRes = await fetch(`${PUBLIC_DEV_BASE_URL}/albums/${params.albumId}/songs`);
+		const trackJson = await trackRes.json();
+
 		return {
 			success: true,
-			tracks: json
+			album: json,
+			tracks: trackJson
 		};
 	} catch (err) {
 		console.error('An error occurred while fetching album!\n', err);
